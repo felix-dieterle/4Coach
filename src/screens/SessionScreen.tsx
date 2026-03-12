@@ -74,7 +74,13 @@ export default function SessionScreen() {
   const handleAnswer = (answer: string) => {
     if (!session) return;
     const q = session.questions[currentQuestionIndex];
-    const updated: Question = { ...q, userAnswer: answer };
+    const updated: Question = {
+      ...q,
+      userAnswer: answer,
+      isCorrect: q.answer
+        ? answer.trim().toLowerCase() === q.answer.trim().toLowerCase()
+        : undefined,
+    };
     const newAnswered = [...answeredQuestions, updated];
     setAnsweredQuestions(newAnswered);
 

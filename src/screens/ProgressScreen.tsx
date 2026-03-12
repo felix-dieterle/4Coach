@@ -14,7 +14,7 @@ export default function ProgressScreen() {
   const totalHomework = sessions.filter((s) => s.completed).length;
   const hwProgress = totalHomework > 0 ? completedHomework / totalHomework : 0;
 
-  // Calculate learning streak (consecutive days with sessions)
+  // Calculate learning streak (consecutive weekly sessions, max 7-day gap tolerance)
   const streakDays = (() => {
     if (completedSessions.length === 0) return 0;
     const sorted = [...completedSessions].sort(
@@ -22,10 +22,11 @@ export default function ProgressScreen() {
     );
     let streak = 1;
     for (let i = 0; i < sorted.length - 1; i++) {
-      const diff =
+      const diffDays =
         (new Date(sorted[i].date).getTime() - new Date(sorted[i + 1].date).getTime()) /
         (1000 * 60 * 60 * 24);
-      if (diff <= 7) streak++;
+      // Allow 5-9 day gap as "consecutive weekly" session
+      if (diffDays >= 5 && diffDays <= 9) streak++;
       else break;
     }
     return streak;

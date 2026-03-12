@@ -17,11 +17,14 @@ export async function requestPermissions(): Promise<boolean> {
 }
 
 // Schedules a weekly session reminder (0=Sunday, 1=Monday, ..., 6=Saturday)
+// Expo WEEKLY trigger uses 1=Sunday, 2=Monday, ..., 7=Saturday
 export async function scheduleWeeklySession(
   dayOfWeek: number,
   hour: number
 ): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
+  // Map JS weekday (0=Sunday…6=Saturday) → Expo weekday (1=Sunday…7=Saturday)
+  const expoWeekday = dayOfWeek === 0 ? 7 : dayOfWeek;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: '4Coach - Zeit für Ihre Session! 🎯',
@@ -29,7 +32,7 @@ export async function scheduleWeeklySession(
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
-      weekday: dayOfWeek + 1,
+      weekday: expoWeekday,
       hour,
       minute: 0,
     },

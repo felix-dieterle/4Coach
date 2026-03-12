@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { speak, stop, isSpeaking } from '../services/audioService';
+import * as Speech from 'expo-speech';
 
 interface Props {
   text: string;
@@ -14,15 +14,29 @@ export default function AudioPlayer({ text, title }: Props) {
 
   const handleToggle = async () => {
     if (playing) {
-      stop();
+      Speech.stop();
       setPlaying(false);
     } else {
       setLoading(true);
       try {
-        await speak(text);
-        setPlaying(true);
-      } finally {
+        Speech.speak(text, {
+          language: 'de-DE',
+          rate: 0.9,
+          pitch: 1.0,
+          onStart: () => {
+            setLoading(false);
+            setPlaying(true);
+          },
+          onDone: () => setPlaying(false),
+          onStopped: () => setPlaying(false),
+          onError: () => {
+            setLoading(false);
+            setPlaying(false);
+          },
+        });
+      } catch {
         setLoading(false);
+        setPlaying(false);
       }
     }
   };

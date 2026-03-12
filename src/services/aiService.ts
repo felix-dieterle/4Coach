@@ -62,9 +62,13 @@ export async function generateQuestions(
     const challenges = previousChallenges.length > 0
       ? previousChallenges.join(', ')
       : 'keine bisherigen Herausforderungen';
-    const prompt = `Erstelle 3 Wissensfragen auf Deutsch zum Thema "${topic}" für einen Coaching-Klienten. Bisherige Herausforderungen: ${challenges}. Gib die Antworten als JSON-Array zurück mit dem Format: [{"text": "Frage", "answer": "Antwort"}]. Nur das JSON-Array, kein weiterer Text.`;
+    const prompt = `Erstelle 3 Wissensfragen auf Deutsch zum Thema "${topic}" für einen Coaching-Klienten. Bisherige Herausforderungen: ${challenges}. Antworte ausschließlich mit einem gültigen JSON-Array im Format: [{"text": "Frage", "answer": "Antwort"}]. Kein weiterer Text oder Erklärungen.`;
     const raw = await callOpenAI(prompt);
-    const parsed = JSON.parse(raw) as Array<{ text: string; answer: string }>;
+    // Extract JSON array from response (handles cases where model adds extra text)
+    const jsonMatch = raw.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found in response');
+    const parsed = JSON.parse(jsonMatch[0]) as Array<{ text: string; answer: string }>;
+    if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('Invalid questions format');
     return parsed.map((q, i) => ({
       id: `q-${Date.now()}-${i}`,
       text: q.text,
